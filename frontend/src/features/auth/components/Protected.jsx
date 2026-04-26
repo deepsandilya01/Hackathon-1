@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../hook/useAuth';
+import { getDashboardPath } from '../utils/roleRedirect';
 
 export default function Protected({ allowedRoles }) {
   const { user, isAuthenticated, isInitialized, loading } = useAuth();
@@ -13,8 +14,11 @@ export default function Protected({ allowedRoles }) {
     return <Navigate to="/login" replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return <Navigate to={user.role === 'Staff' ? '/staff/dashboard' : '/user/dashboard'} replace />;
+  const normalizedRole = String(user.role).trim().toLowerCase();
+  const normalizedAllowedRoles = allowedRoles?.map((role) => String(role).trim().toLowerCase());
+
+  if (normalizedAllowedRoles && !normalizedAllowedRoles.includes(normalizedRole)) {
+    return <Navigate to={getDashboardPath(user.role)} replace />;
   }
 
   return <Outlet />;
