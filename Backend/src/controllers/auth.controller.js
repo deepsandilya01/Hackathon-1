@@ -2,13 +2,14 @@ import userModel from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import { config } from "../config/config.js";
 import { sendEmail } from "../services/mail.service.js";
+import redis from "../config/redis.js";
 
 /**
  * REGISTER
  */
 export async function register(req, res) {
   try {
-    const { fullname, phone, email, password } = req.body;
+    const { fullname, phone, email, password, role } = req.body;
 
     const existingUser = await userModel.findOne({
       $or: [{ email }, { phone }],
@@ -26,6 +27,8 @@ export async function register(req, res) {
       phone,
       email,
       password,
+      role: role || "User",
+      verified: false 
     });
 
     // Email verification token
@@ -33,25 +36,37 @@ export async function register(req, res) {
       expiresIn: "1h",
     });
 
-    // Send Email via Resend
-    await sendEmail({
-      to: email,
-      subject: "Verify Your Email 🚀",
-      html: `
-        <h2>Hello ${fullname},</h2>
-        <p>Welcome to <strong>Your Project</strong></p>
-        <p>Click below to verify your email:</p>
-        <a href="http://localhost:3000/api/auth/verify-email?token=${token}">
-          Verify Email
-        </a>
-        <p>This link expires in 1 hour.</p>
-      `,
-    });
-
-    res.status(201).json({
-      message: "Registered successfully. Check email.",
-      success: true,
-    });
+    try {
+      // Send Email via Resend
+      await sendEmail({
+        to: email,
+        subject: "Verify Your Email 🚀",
+        html: `
+          <h2>Hello ${fullname},</h2>
+          <p>Welcome to <strong>Crisis Response System</strong></p>
+          <p>Click below to verify your email:</p>
+          <a href="http://localhost:3000/api/auth/verify-email?token=${token}">
+            Verify Email
+          </a>
+          <p>This link expires in 1 hour.</p>
+        `,
+      });
+      
+      res.status(201).json({
+        message: "Registered successfully. Please check your email to verify your account.",
+        success: true,
+      });
+    } catch (emailError) {
+      console.error("Failed to send email:", emailError);
+      // Even if email fails, we shouldn't throw a 500 if user was created.
+      // But since they can't verify, we might want to auto-verify them or just return an error.
+      // Let's delete the user so they can try again, or just return an error.
+      await userModel.findByIdAndDelete(user._id);
+      return res.status(500).json({
+        message: "Failed to send verification email. Please ensure you are using a verified Resend domain.",
+        success: false,
+      });
+    }
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -142,9 +157,13 @@ export async function login(req, res) {
       secure: false,
     });
 
+    const userResponse = user.toObject();
+    delete userResponse.password;
+
     res.json({
       message: "Login successful",
       success: true,
+      user: userResponse,
     });
   } catch (error) {
     res.status(500).json({
@@ -164,4 +183,45 @@ export async function getMe(req, res) {
     success: true,
     user,
   });
+}
+
+/**
+ * LOGOUT
+ */
+export async function logout(req, res) {
+  try {
+    const token = req.cookies.token;
+
+    if (!token) {
+      return res.status(400).json({
+        message: "No token provided",
+        success: false,
+      });
+    }
+
+    try {
+      const decoded = jwt.verify(token, config.JWT_SECRET);
+      const expireTime = decoded.exp - Math.floor(Date.now() / 1000);
+
+      // Add to Redis blocklist if token hasn't expired yet
+      if (expireTime > 0) {
+        await redis.set(`bl_${token}`, "blocked", "EX", expireTime);
+      }
+    } catch (err) {
+      // Token might already be invalid/expired, just proceed to clear cookie
+    }
+
+    res.clearCookie("token");
+
+    res.json({
+      message: "Logout successful",
+      success: true,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Server error",
+      success: false,
+    });
+  }
 }

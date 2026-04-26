@@ -5,13 +5,17 @@ dns.setDefaultResultOrder("ipv4first");
 import app from "./src/app.js";
 import { config } from "./src/config/config.js";
 import connectDB from "./src/config/db.js";
+import { createServer } from "http";
+import { initSocket } from "./src/services/socket.service.js";
 
 const PORT = config.PORT;
 
 const startServer = async () => {
   try {
     await connectDB();
-    app.listen(PORT, () => {
+    const server = createServer(app);
+    initSocket(server);
+    server.listen(PORT, () => {
       console.log(`Server listening on port ${PORT}`);
     });
   } catch (error) {
