@@ -1,0 +1,100 @@
+### ========================================
+### API TESTING GUIDE (VS Code REST Client)
+### ========================================
+# Install the "REST Client" extension in VS Code.
+# You can click "Send Request" above any of the requests below to test directly.
+
+@baseUrl = http://localhost:3000/api
+# Replace these with real IDs when testing manually
+@incidentId = YOUR_INCIDENT_ID
+@notificationId = YOUR_NOTIFICATION_ID
+
+### ----------------------------------------
+### 1. AUTHENTICATION
+### ----------------------------------------
+
+### Login as User (Replace credentials as needed)
+# @name loginUser
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@test.com",
+  "password": "password123"
+}
+
+### Login as Staff (Replace credentials as needed)
+# @name loginStaff
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "staff@test.com",
+  "password": "password123"
+}
+
+### Logout Current User (Requires Login)
+POST {{baseUrl}}/auth/logout
+
+
+
+### ----------------------------------------
+### 2. USER ACTIONS (Requires User Login)
+### ----------------------------------------
+
+### Report a New Incident (AI will classify it!)
+POST {{baseUrl}}/incidents/report
+Content-Type: application/json
+
+{
+  "title": "Smoke coming out of Room 304",
+  "description": "Thick black smoke is billowing from under the door of room 304.",
+  "location": "3rd Floor / Room 304"
+}
+
+### Get My Incidents
+GET {{baseUrl}}/incidents/my-incidents
+
+### Get Specific Incident By ID
+GET {{baseUrl}}/incidents/{{incidentId}}
+
+
+### ----------------------------------------
+### 3. STAFF ACTIONS (Requires Staff Login)
+### ----------------------------------------
+
+### Get Dashboard Counts
+GET {{baseUrl}}/incidents/dashboard
+
+### Get All Incidents (You can add ?status=Pending&severity=Critical)
+GET {{baseUrl}}/incidents/all
+
+### Update Incident Status
+PATCH {{baseUrl}}/incidents/{{incidentId}}/status
+Content-Type: application/json
+
+{
+  "status": "Active"
+}
+
+### Update Incident to Resolved
+PATCH {{baseUrl}}/incidents/{{incidentId}}/status
+Content-Type: application/json
+
+{
+  "status": "Resolved"
+}
+
+
+### ----------------------------------------
+### 4. NOTIFICATIONS (Staff or User)
+### ----------------------------------------
+
+### Get All Notifications
+GET {{baseUrl}}/notifications/
+
+### Mark ALL Notifications as Read
+PATCH {{baseUrl}}/notifications/read-all
+
+### Mark Single Notification as Read
+PATCH {{baseUrl}}/notifications/{{notificationId}}/read
