@@ -5,6 +5,7 @@ import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { Select } from '../../../components/ui/Select';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../../../components/ui/Card';
+import { getDashboardPath } from '../utils/roleRedirect';
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -19,7 +20,7 @@ export default function Register() {
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      navigate(user.role === 'Staff' ? '/staff/dashboard' : '/user/dashboard');
+      navigate(getDashboardPath(user.role), { replace: true });
     }
   }, [isAuthenticated, user, navigate]);
 

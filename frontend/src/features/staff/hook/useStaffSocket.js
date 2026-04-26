@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import { addNewIncident } from '../state/staff.slice';
 import { useToast } from '../../../components/ui/Toast';
 import { addNotification } from '../../notifications/state/notification.slice';
+import { SOCKET_URL } from '../../../lib/axios';
 
 export function useStaffSocket(userRole) {
   const socketRef = useRef(null);
@@ -13,7 +14,7 @@ export function useStaffSocket(userRole) {
   useEffect(() => {
     if (userRole !== 'Staff') return;
 
-    socketRef.current = io('http://localhost:3000');
+    socketRef.current = io(SOCKET_URL, { withCredentials: true });
 
     socketRef.current.on('connect', () => {
       socketRef.current.emit('join-staff-room');

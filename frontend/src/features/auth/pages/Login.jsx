@@ -4,6 +4,7 @@ import { useAuth } from '../hook/useAuth';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../../../components/ui/Card';
+import { getDashboardPath } from '../utils/roleRedirect';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -15,13 +16,18 @@ export default function Login() {
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      navigate(user.role === 'Staff' ? '/staff/dashboard' : '/user/dashboard');
+      navigate(getDashboardPath(user.role), { replace: true });
     }
   }, [isAuthenticated, user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await login(email, password);
+    const action = await login(email, password);
+    const loggedInUser = action.payload?.user || action.payload;
+
+    if (action.meta.requestStatus === 'fulfilled' && loggedInUser) {
+      navigate(getDashboardPath(loggedInUser.role), { replace: true });
+    }
   };
 
   if (!isInitialized || (loading && !isAuthenticated)) {
