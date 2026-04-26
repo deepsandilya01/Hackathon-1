@@ -45,7 +45,7 @@ export async function register(req, res) {
           <h2>Hello ${fullname},</h2>
           <p>Welcome to <strong>Crisis Response System</strong></p>
           <p>Click below to verify your email:</p>
-          <a href="http://localhost:3000/api/auth/verify-email?token=${token}">
+          <a href="${config.API_PUBLIC_URL}/api/auth/verify-email?token=${token}">
             Verify Email
           </a>
           <p>This link expires in 1 hour.</p>
@@ -106,7 +106,7 @@ export async function verifyEmail(req, res) {
 
     return res.send(`
       <h2>✅ Email Verified</h2>
-      <a href="http://localhost:3000/api/auth/login">Login Now</a>
+      <a href="${config.FRONTEND_URL}/login">Login Now</a>
     `);
   } catch (err) {
     return res.status(400).json({

@@ -53,6 +53,7 @@ const authSlice = createSlice({
       state.user = null;
       state.isAuthenticated = false;
       state.error = null;
+      localStorage.removeItem('token');
     },
     clearError: (state) => {
       state.error = null;
@@ -66,6 +67,9 @@ const authSlice = createSlice({
         state.loading = false;
         state.isAuthenticated = true;
         state.user = action.payload.user || action.payload; // depending on API response
+        if (action.payload.token) {
+          localStorage.setItem('token', action.payload.token);
+        }
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
@@ -100,6 +104,7 @@ const authSlice = createSlice({
         state.user = null;
         state.isAuthenticated = false;
         state.error = null;
+        localStorage.removeItem('token');
       });
   },
 });

@@ -3,6 +3,7 @@ import { io } from 'socket.io-client';
 import { useDispatch } from 'react-redux';
 import { updateIncident } from '../state/incident.slice';
 import { useToast } from '../../../components/ui/Toast';
+import { SOCKET_URL } from '../../../lib/axios';
 
 export function useSocket(userId) {
   const socketRef = useRef(null);
@@ -12,7 +13,7 @@ export function useSocket(userId) {
   useEffect(() => {
     if (!userId) return;
 
-    socketRef.current = io('http://localhost:3000');
+    socketRef.current = io(SOCKET_URL, { withCredentials: true });
 
     socketRef.current.on('connect', () => {
       socketRef.current.emit('join-room', userId);
