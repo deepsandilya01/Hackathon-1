@@ -154,7 +154,8 @@ export async function login(req, res) {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,
+      secure: process.env.NODE_ENV === "production" ? true : false,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     });
 
     const userResponse = user.toObject();
@@ -163,6 +164,7 @@ export async function login(req, res) {
     res.json({
       message: "Login successful",
       success: true,
+      token, // Return token here
       user: userResponse,
     });
   } catch (error) {
