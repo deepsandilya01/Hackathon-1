@@ -45,7 +45,7 @@ export async function register(req, res) {
           <h2>Hello ${fullname},</h2>
           <p>Welcome to <strong>Crisis Response System</strong></p>
           <p>Click below to verify your email:</p>
-          <a href="${config.API_PUBLIC_URL}/api/auth/verify-email?token=${token}">
+          <a href="https://hackathon-1-2wnx.onrender.com/api/auth/verify-email?token=${token}">
             Verify Email
           </a>
           <p>This link expires in 1 hour.</p>
