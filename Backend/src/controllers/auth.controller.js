@@ -106,7 +106,7 @@ export async function verifyEmail(req, res) {
 
     return res.send(`
       <h2>✅ Email Verified</h2>
-      <a href="${config.FRONTEND_URL}/login">Login Now</a>
+      <a href="https://hackathon-1-lilac-beta.vercel.app/login">Login Now</a>
     `);
   } catch (err) {
     return res.status(400).json({
